@@ -296,6 +296,26 @@ export function useModelControls({
         updateModelOptionsCache(liveSessionId, provider, model, touchesPrimary && !liveSessionId, liveGatewayProfile)
       }
 
+      // The primary pill reads the live session cache, not only the composer
+      // draft. Paint that cache once the gateway confirms the switch, without
+      // adding optimistic primary-runtime state that would need to be rolled
+      // back. A superseded response must not overwrite a newer pending pick;
+      // mixed success/failure overlaps stay on the pre-existing session.info
+      // reconciliation path instead of guessing the backend's final state;
+      // deferred switches wait for the session.info published when they land.
+      const paintConfirmedSession = (token: number, result: ModelSwitchResponse | undefined) => {
+        if (!liveSessionId || result?.deferred || isPickSuperseded(liveSessionId, token)) {
+          return
+        }
+
+        sessionTileDelegate()?.updateSession(liveSessionId, state => ({
+          ...state,
+          model: selection.model,
+          provider: selection.provider,
+          reasoningEffortWire: ''
+        }))
+      }
+
       const restoreSnapshot = (snapshot: ModelPickSnapshot) => {
         if (touchesPrimary) {
           setCurrentModel(snapshot.model)
@@ -430,6 +450,7 @@ export function useModelControls({
             requestConfirmed: () => requestSwitch(true),
             finish: result => {
               if (retryToken !== null) {
+                paintConfirmedSession(retryToken, result)
                 settleModelPick(liveSessionId, retryToken, true)
               }
 
@@ -447,6 +468,7 @@ export function useModelControls({
           return false
         }
 
+        paintConfirmedSession(pickToken, result)
         settleModelPick(liveSessionId, pickToken, true)
         finishSwitch(result)
 
