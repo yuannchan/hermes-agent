@@ -100,6 +100,59 @@ def test_doctor_restores_global_tool_policy_and_module_state(tmp_path: Path) -> 
     assert after_modules == before_modules
 
 
+def test_doctor_tolerates_concurrent_module_imports(tmp_path: Path) -> None:
+    """A concurrent import must not abort Doctor's initial module snapshot."""
+    import sys
+    import threading
+    import types
+
+    from hermes_cli.plugin_dev import doctor_plugin
+
+    plugin = tmp_path / "minimal"
+    plugin.mkdir()
+    (plugin / "plugin.yaml").write_text("name: minimal\n", encoding="utf-8")
+    (plugin / "__init__.py").write_text(
+        "def register(ctx):\n    pass\n", encoding="utf-8"
+    )
+
+    # Make the name-filtering pass span many GIL handoffs, then keep changing
+    # the mapping's size while Doctor takes its snapshot.
+    padded = [f"__doctor_padding_{i}" for i in range(5000)]
+    for name in padded:
+        sys.modules[name] = types.ModuleType(name)
+    previous_interval = sys.getswitchinterval()
+    sys.setswitchinterval(1e-6)
+    stop = threading.Event()
+    churn_rounds = 0
+
+    def churn() -> None:
+        nonlocal churn_rounds
+        while not stop.is_set():
+            batch = [f"__doctor_churn_{churn_rounds}_{i}" for i in range(50)]
+            for name in batch:
+                sys.modules[name] = None
+            for name in batch:
+                sys.modules.pop(name, None)
+            churn_rounds += 1
+
+    churner = threading.Thread(target=churn, daemon=True)
+    churner.start()
+    try:
+        report = doctor_plugin(plugin)
+    finally:
+        stop.set()
+        churner.join(timeout=10)
+        sys.setswitchinterval(previous_interval)
+        for name in padded:
+            sys.modules.pop(name, None)
+        for name in list(sys.modules):
+            if name.startswith("__doctor_churn_"):
+                sys.modules.pop(name, None)
+
+    assert churn_rounds > 0, "churn thread never opened the race window"
+    assert report.ok, report.format_text()
+
+
 def test_doctor_blocks_live_network(tmp_path: Path) -> None:
     from hermes_cli.plugin_dev import doctor_plugin
 

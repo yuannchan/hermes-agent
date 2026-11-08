@@ -429,7 +429,7 @@ class HostRuntime:
         self.loads.pop(plugin_key, None)
         module_name = self.modules.pop(plugin_key, "")
         if module_name:
-            for name in [m for m in sys.modules if m == module_name or m.startswith(module_name + ".")]:
+            for name in [m for m in list(sys.modules) if m == module_name or m.startswith(module_name + ".")]:
                 sys.modules.pop(name, None)
         return {"errors": errors}
 
@@ -529,7 +529,7 @@ def _import_plugin(params: dict[str, Any]) -> Any:
     try:
         spec.loader.exec_module(module)
     except BaseException:
-        for name in [m for m in sys.modules if m == module_name or m.startswith(module_name + ".")]:
+        for name in [m for m in list(sys.modules) if m == module_name or m.startswith(module_name + ".")]:
             sys.modules.pop(name, None)
         raise
     return module
