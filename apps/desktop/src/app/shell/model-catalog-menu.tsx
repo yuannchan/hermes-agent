@@ -284,8 +284,8 @@ export function ModelCatalogMenu({
     // gateway owns the model catalog, including virtual providers the local
     // REST fallback can't know about (#53817).
     queryFn: (): Promise<ModelOptionsResult> => requestModelOptions({ gateway, profile, request, sessionId }),
-    refetchOnMount: query => nousRefetchOnMount(query.state.data),
-    refetchInterval: query => nousPricingPoll(query.state.data, query.state.dataUpdateCount)
+    refetchOnMount: () => true,
+    refetchInterval: () => false
   })
 
   const loading = modelOptions.isPending && !modelOptions.data
@@ -317,7 +317,10 @@ export function ModelCatalogMenu({
 
   const error = queryErrorMessage(modelOptions.error)
 
-  const providers = modelOptions.data?.providers
+  const providers = useMemo(
+    () => modelOptions.data?.providers?.filter(provider => provider.slug !== 'nous'),
+    [modelOptions.data?.providers]
+  )
 
   // The catalog carries MoA presets as a virtual `moa` provider row. Keep it
   // out of the main groups so presets never show up twice.
@@ -1430,28 +1433,6 @@ function groupModels(
   groups.sort((a, b) => a.provider.name.localeCompare(b.provider.name))
 
   return groups
-}
-
-// The Nous row: the only one the menu re-reads on open or while its pricing warms (window-plan labels).
-function isNous(provider: ModelOptionProvider): boolean {
-  return provider.slug === 'nous'
-}
-
-// Nous only: re-read on every open (cached list shows instantly, the re-read swaps in when it
-// lands). The plan (usage-window labels, used-up notes) loads with the first turn, after the
-// list was first fetched at boot, so the 60s cache would hide it until "Refresh models".
-// A cheap local cache-only read (the plan may not be known yet, so any Nous row); every other
-// provider keeps the 60s cache.
-function nousRefetchOnMount(data: ModelOptionsResult | undefined): 'always' | true {
-  return data?.providers?.some(isNous) ? 'always' : true
-}
-
-// A cache-only open on a fresh backend ships rows marked pending while pricing warms in the
-// background; re-read a few times so window-plan labels appear without "Refresh models".
-// Bounded (~10s): a failed pricing fetch can leave rows pending, and an open menu must not
-// poll forever. Only runs while the menu is mounted and a row is pending.
-function nousPricingPoll(data: ModelOptionsResult | undefined, updates: number): false | number {
-  return updates < 6 && data?.providers?.some(p => isNous(p) && p.pricing_pending) ? 2_000 : false
 }
 
 // Window plans: the plan's featured picks lead (the backend lists them first). Re-applied after the

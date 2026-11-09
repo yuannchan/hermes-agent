@@ -3,7 +3,7 @@ import crypto from 'node:crypto'
 
 import { test } from 'vitest'
 
-import { connectWindowsRemote, decodePowerShellCommand } from './windows-remote-lifecycle'
+import { connectWindowsRemote, decodePowerShellCommand } from './windows-remote-core'
 
 const OWNERSHIP_ID = '0123456789abcdef0123456789abcdef'
 const SPAWN_NONCE = '0123456789abcdef'

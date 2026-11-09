@@ -116,6 +116,42 @@ export const githubTheme: DesktopTheme = {
 
 /** Catppuccin — Latte in light, Mocha in dark (Catppuccin.catppuccin-vsc). */
 
+/** Holo — the light, warm wolf identity used everywhere in this build. */
+export const holoTheme: DesktopTheme = {
+  name: 'holo',
+  label: 'Holo',
+  description: 'Warm cream paper and wheat-gold accents',
+  ...THEME_PRESET_PALETTES.holo,
+  // Holo is light-only. Supplying the same palette for both modes keeps the
+  // generic dark-only skin lightener from bleaching its warm cream to white.
+  darkColors: THEME_PRESET_PALETTES.holo.colors,
+  typography: {
+    fontSans: SYSTEM_SANS,
+    fontMono: SYSTEM_MONO
+  },
+  terminal: {
+    foreground: '#4b3427',
+    cursor: '#a65c3b',
+    selectionBackground: '#ead0a2',
+    black: '#4b3427',
+    red: '#c94a43',
+    green: '#557b45',
+    yellow: '#a66b22',
+    blue: '#4c7391',
+    magenta: '#9a5577',
+    cyan: '#4f7f79',
+    white: '#9a8066',
+    brightBlack: '#84684e',
+    brightRed: '#d85e56',
+    brightGreen: '#6f985c',
+    brightYellow: '#c58937',
+    brightBlue: '#668eaa',
+    brightMagenta: '#b2708f',
+    brightCyan: '#689991',
+    brightWhite: '#4b3427'
+  }
+}
+
 /**
  * Nous — the canonical Hermes desktop identity: GitHub's chrome carrying Nous
  * blue. Forked from github.github-vscode-theme (Light Default / Dark Default),
@@ -442,12 +478,11 @@ export const slateTheme: DesktopTheme = {
 }
 
 export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
-  nous: nousTheme,
+  holo: holoTheme,
   github: githubTheme,
   catppuccin: catppuccinTheme,
   everforest: everforestTheme,
   solarized: solarizedTheme,
-  'nous-alt': nousAltTheme,
   classic: classicTheme,
   midnight: midnightTheme,
   ember: emberTheme,
@@ -459,10 +494,10 @@ export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
 export const BUILTIN_THEME_LIST = Object.values(BUILTIN_THEMES)
 
 /** Skin used when nothing is persisted or the persisted name is retired. */
-export const DEFAULT_SKIN_NAME = 'nous'
+export const DEFAULT_SKIN_NAME = 'holo'
 
 /** Names that no longer resolve to a skin of their own. A stored pick of one
  *  falls back to DEFAULT_SKIN_NAME, and a cached backend theme under one is
  *  dropped (the reverted #130015 build cached the CLI `default` skin as a
  *  second "Classic Hermes"). */
-export const RETIRED_SKINS = new Set(['nous-light', 'default', 'gold'])
+export const RETIRED_SKINS = new Set(['nous', 'nous-alt', 'nous-light', 'default', 'gold'])

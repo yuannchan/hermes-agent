@@ -16,7 +16,7 @@
 
 import { expandRemotePath, shq } from './remote-lifecycle'
 import { REMOTE_MARKER_JUDGE_PY } from './remote-update-marker-programs'
-import { encodedPowerShell, powerShellCommand, psLiteral } from './windows-remote-lifecycle'
+import { encodedPowerShell, powerShellCommand, psLiteral } from './windows-remote-core'
 
 const UPDATE_EXIT_INDEPENDENT_HANDOFF = 75
 const DEFAULT_REMOTE_UPDATE_TIMEOUT_MS = 60 * 60 * 1000

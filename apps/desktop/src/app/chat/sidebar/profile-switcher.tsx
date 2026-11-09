@@ -1565,7 +1565,15 @@ function ProfileSquare({
                     onPointerMove={notePointerMove}
                     onPointerUp={clearPress}
                   >
-                    {profileShortLabel(label)}
+                    {normalizeProfileKey(name) === 'holo' ? (
+                      <img
+                        alt=""
+                        className="size-full rounded-[inherit] object-cover"
+                        src={`${import.meta.env.BASE_URL}apple-touch-icon.png`}
+                      />
+                    ) : (
+                      profileShortLabel(label)
+                    )}
                     {/* The "remote" badge: a tiny globe pinned to the corner of an
                         overridden profile's square, so which profiles leave this
                         machine is visible at a glance (#91349). */}

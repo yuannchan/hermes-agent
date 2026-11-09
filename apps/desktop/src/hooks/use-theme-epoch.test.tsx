@@ -137,9 +137,9 @@ describe('theme repaint subscriptions', () => {
     expect(repaint).toHaveBeenCalledOnce()
   })
 
-  it('reads the provider paint after mount, skin/mode/font/accent changes, and same-palette customCSS edits', async () => {
+  it('reads the provider paint after mount, skin changes, light-locked mode requests, font/accent changes, and same-palette customCSS edits', async () => {
     let setTheme!: (name: string) => void
-    let setDarkMode!: () => void
+    let requestDarkMode!: () => void
     const paints = vi.fn()
     let mounts = 0
     let unmounts = 0
@@ -147,7 +147,7 @@ describe('theme repaint subscriptions', () => {
     function Controls() {
       const theme = useTheme()
       setTheme = theme.setTheme
-      setDarkMode = () => theme.setMode('dark')
+      requestDarkMode = () => theme.setMode('dark')
 
       return null
     }
@@ -188,9 +188,11 @@ describe('theme repaint subscriptions', () => {
     await act(async () => setTheme('everforest'))
     await flush()
     expect(paints).toHaveBeenLastCalledWith(expect.objectContaining({ skin: 'everforest' }))
-    await act(async () => setDarkMode())
+    const paintsBeforeLockedMode = paints.mock.calls.length
+    await act(async () => requestDarkMode())
     await flush()
-    expect(paints).toHaveBeenLastCalledWith(expect.objectContaining({ mode: 'dark' }))
+    expect(paints).toHaveBeenCalledTimes(paintsBeforeLockedMode)
+    expect(paints).toHaveBeenLastCalledWith(expect.objectContaining({ mode: 'light' }))
     await act(async () => $chatFontFamily.set('Theme Regression Font'))
     await flush()
     expect(paints).toHaveBeenLastCalledWith(

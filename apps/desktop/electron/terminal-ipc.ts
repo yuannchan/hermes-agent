@@ -21,7 +21,7 @@ import {
 } from './terminal-gateway-target'
 import { createTerminalOutputGate } from './terminal-output-gate'
 import { applyWindowsMsysBashEnvDefaults } from './windows-msys-bash-env'
-import { buildWindowsInteractiveCommand } from './windows-remote-lifecycle'
+import { buildWindowsInteractiveCommand } from './windows-remote-core'
 
 export interface TerminalIpcDeps {
   isWindows: boolean

@@ -122,6 +122,36 @@ export const THEME_PRESET_PALETTES = {
       userBubbleBorder: '#30363d'
     }
   },
+  holo: {
+    colors: {
+      background: '#fffbf3',
+      foreground: '#4b3427',
+      card: '#fff7e8',
+      cardForeground: '#4b3427',
+      muted: '#f7e9d2',
+      mutedForeground: '#84684e',
+      popover: '#fffbf3',
+      popoverForeground: '#4b3427',
+      primary: '#a65c3b',
+      primaryForeground: '#ffffff',
+      secondary: '#f4dfbe',
+      secondaryForeground: '#4b3427',
+      accent: '#f7d99b',
+      accentForeground: '#4b3427',
+      border: '#e3c79f',
+      input: '#fffefa',
+      ring: '#c57a3a',
+      midground: '#a75f3b',
+      midgroundForeground: '#ffffff',
+      composerRing: '#b96a3e',
+      destructive: '#c94a43',
+      destructiveForeground: '#ffffff',
+      sidebarBackground: '#fff6e8',
+      sidebarBorder: '#e3c79f',
+      userBubble: '#f7e7c8',
+      userBubbleBorder: '#e3c79f'
+    }
+  },
   nous: {
     colors: {
       background: '#ffffff',
