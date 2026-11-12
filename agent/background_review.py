@@ -1186,6 +1186,26 @@ def release_cache_parity_fork(
     return usage
 
 
+def _live_memory_block(review_agent: Any) -> str:
+    """The store as it is NOW, for the review's user message. The inherited system prompt carries
+    the snapshot frozen at session start, so in a long session the reviewer cannot see what was
+    saved since and re-adds paraphrases of it (``add`` rejects only exact duplicates)."""
+    store = getattr(review_agent, "_memory_store", None)
+    if store is None:
+        return ""
+    from tools.memory_tool_store import ENTRY_DELIMITER
+
+    parts = [f"{name} now:\n" + ENTRY_DELIMITER.join(entries)
+             for name, entries, on in (
+                 ("MEMORY.md", getattr(store, "memory_entries", None), getattr(review_agent, "_memory_enabled", False)),
+                 ("USER.md", getattr(store, "user_entries", None), getattr(review_agent, "_user_profile_enabled", False)))
+             if on and entries]
+    if not parts:
+        return ""
+    return ("\n\nThe stores as they are right now (newer than the copy in your system prompt). "
+            "Do not add a fact that is already here in other words:\n\n" + "\n\n".join(parts))
+
+
 def _run_review_fork(
     agent: Any, messages_snapshot: list[dict], prompt: str, task_cfg: Optional[dict[str, Any]],
     review_run: Optional[_BackgroundReviewRun], st: _ReviewForkState, review_memory: bool = False,
@@ -1230,6 +1250,7 @@ def _run_review_fork(
                     prompt + "\n\nYou can only call " + memory_phrase_prompt +
                     "management tools. Other tools will be denied "
                     "at runtime — do not attempt them." + prompt_extra
+                    + _live_memory_block(st.review_agent)
                 ),
                 conversation_history=_digest_history(messages_snapshot) if _routed else messages_snapshot,
             )
