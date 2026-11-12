@@ -73,7 +73,7 @@ Everything else at the root is build/config plumbing (`pyproject.toml`, lockfile
 
 ## Running this fork
 
-This fork is not published as an installer. It runs from source using the upstream developer workflow — see [CONTRIBUTING.md](CONTRIBUTING.md) and the [developer guide](https://hermes-agent.nousresearch.com/docs/developer-guide/).
+Personal builds are published under [Releases](https://github.com/yuannchan/hermes-agent/releases) (Windows MSIX, for the author's own machines — not an officially supported distribution). The source also runs directly with the upstream developer workflow — see [CONTRIBUTING.md](CONTRIBUTING.md) and the [developer guide](https://hermes-agent.nousresearch.com/docs/developer-guide/).
 
 For the official, supported application, install [Hermes Agent](https://hermes-agent.nousresearch.com/) from upstream instead.
 
