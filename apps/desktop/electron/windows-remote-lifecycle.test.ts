@@ -26,7 +26,7 @@ import {
   reusableWindowsLock,
   terminateOwnedWindowsDashboardForUpdate,
   validLock
-} from './windows-remote-lifecycle'
+} from './windows-remote-core'
 
 const ownershipId = '0123456789abcdef0123456789abcdef'
 

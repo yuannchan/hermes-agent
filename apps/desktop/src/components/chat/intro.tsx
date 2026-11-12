@@ -146,7 +146,8 @@ function pickCopy(copies: IntroCopy[], seed = 0): IntroCopy {
   return copies[Math.abs(seed) % copies.length] || FALLBACK_COPY[0]
 }
 
-const WORDMARK = 'HERMES AGENT'
+const WORDMARK = 'HOLO'
+const HOLO_ICON = `${import.meta.env.BASE_URL}apple-touch-icon.png`
 
 function resolveCopy(personality?: string, seed?: number): IntroCopy {
   const personalityKey = normalizeKey(personality)
@@ -175,9 +176,23 @@ export function Intro({ personality, seed }: IntroProps) {
       className="pointer-events-none flex w-full min-w-0 flex-col items-center justify-center px-0.5 py-6 text-center text-muted-foreground sm:px-6 lg:px-8"
       data-slot="aui_intro"
     >
-      <div className="w-full min-w-0">
-        <Wordmark className="mb-1" text={WORDMARK} />
-
+      <div className="holo-intro w-full min-w-0">
+        <div aria-hidden="true" className="holo-intro-emblem">
+          <img alt="" src={HOLO_ICON} />
+          <span className="holo-intro-apple">🍎</span>
+        </div>
+        <Wordmark
+          className="holo-wordmark mb-1"
+          fitMin="2.75rem"
+          text={WORDMARK}
+          width="min(22rem, calc(100% - 2rem))"
+        />
+        <div className="holo-intro-subtitle">
+          <span aria-hidden="true">🌾</span>
+          <span>WISE WOLF OF YOITZ</span>
+          <span aria-hidden="true">🌾</span>
+        </div>
+        <p className="holo-intro-greeting">咱是赫萝，约伊兹的贤狼。</p>
         <p className="m-0 text-center leading-normal tracking-tight">{body}</p>
       </div>
     </div>

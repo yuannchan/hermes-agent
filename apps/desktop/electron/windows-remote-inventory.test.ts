@@ -6,8 +6,8 @@ import path from 'node:path'
 
 import { test } from 'vitest'
 
+import { atomicWindowsSpawn, atomicWindowsSpawnCommand, compressedPowerShellCommand, decodePowerShellCommand, encodedPowerShell, probeWindowsFiles, probeWindowsRemote } from './windows-remote-core'
 import { listWindowsRemoteProfiles, readWindowsRemoteInstallId } from './windows-remote-inventory'
-import { atomicWindowsSpawn, atomicWindowsSpawnCommand, compressedPowerShellCommand, decodePowerShellCommand, encodedPowerShell, probeWindowsFiles, probeWindowsRemote } from './windows-remote-lifecycle'
 import { WINDOWS_NO_REPARSE_PS } from './windows-runtime-command'
 
 const python = process.env.HERMES_TEST_PYTHON || process.env.HERMES_PYTHON || 'python'
@@ -100,7 +100,7 @@ test('atomic spawn streams its whole script and explicitly pipes Unicode caller 
 })
 
 test('Connect refuses an older helper before token upload or backend spawn on a boot-selected runtime', async () => {
-  const { connectWindowsRemote } = await import('./windows-remote-lifecycle')
+  const { connectWindowsRemote } = await import('./windows-remote-core')
   let writes = 0
 
   const ssh = { exec: async (command: string) => {

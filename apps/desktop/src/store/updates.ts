@@ -423,21 +423,8 @@ export function openUpdatesWindow(target: UpdateTarget = activeUpdateTarget()): 
  * machine's status and must not fan out to the others.
  */
 export function startActiveUpdate(target?: UpdateTarget): void {
-  if (cloudOwnsUpdates(target ?? activeUpdateTarget())) {
-    return
-  }
-
-  if (!target && hasMultipleUpdateTargets()) {
-    $updateOverlayOpen.set(true)
-    void applyEverythingUpdate()
-
-    return
-  }
-
-  const effective = target ?? activeUpdateTarget()
-  $updateOverlayTarget.set(effective)
-  $updateOverlayOpen.set(true)
-  void (effective === 'backend' ? applyBackendUpdate() : applyUpdates())
+  void target
+  // Holo has no official update channel; the action is intentionally inert.
 }
 
 /**
@@ -581,103 +568,15 @@ let backendCheckPendingKey: string | undefined
 export async function checkBackendUpdates({
   force = false
 }: UpdateCheckOptions = {}): Promise<DesktopUpdateStatus | null> {
-  if (cloudOwnsUpdates('backend')) {
-    return null
-  }
-
-  if (!isRemoteMode()) {
-    return $backendUpdateStatus.get()
-  }
-
-  // Bind this request to the connection active when it started. Switching
-  // remote targets mid-request must not let a slower, now-stale response
-  // (for the connection we've since left) overwrite the newer one.
-  const requestKey = connectionKey($connection.get())
-
-  if ($backendUpdateChecking.get()) {
-    backendCheckPendingKey = requestKey
-
-    return $backendUpdateStatus.get()
-  }
-
-  $backendUpdateChecking.set(true)
-
-  try {
-    const status = mapBackendCheck(await checkHermesUpdate(force))
-
-    if (connectionKey($connection.get()) === requestKey) {
-      $backendUpdateStatus.set(status)
-      maybeNotifyUpdateAvailable(status, 'backend')
-    }
-
-    return status
-  } catch (error) {
-    const fallback: DesktopUpdateStatus = {
-      supported: $backendUpdateStatus.get()?.supported ?? true,
-      error: 'check-failed',
-      message: error instanceof Error ? error.message : String(error),
-      fetchedAt: Date.now()
-    }
-
-    if (connectionKey($connection.get()) === requestKey) {
-      $backendUpdateStatus.set(fallback)
-    }
-
-    return fallback
-  } finally {
-    $backendUpdateChecking.set(false)
-
-    const pendingKey = backendCheckPendingKey
-
-    backendCheckPendingKey = undefined
-
-    // Someone asked for a check for a different (still-active) target while
-    // this one was in flight — run it now instead of leaving that target
-    // showing whatever this request happened to return.
-    if (pendingKey && pendingKey !== requestKey && pendingKey === connectionKey($connection.get())) {
-      void checkBackendUpdates()
-    }
-  }
+  void force
+  // Holo has no official update channel. Never probe or download one.
+  return $backendUpdateStatus.get()
 }
 
 export async function checkUpdates({ force = false }: UpdateCheckOptions = {}): Promise<DesktopUpdateStatus | null> {
-  const bridge = window.hermesDesktop?.updates
-
-  if (!bridge || $updateChecking.get() || cloudOwnsUpdates('client')) {
-    return $updateStatus.get()
-  }
-
-  $updateChecking.set(true)
-
-  try {
-    const status = await bridge.check({ force })
-    $updateStatus.set(status)
-
-    if (status.retirement) {
-      maybeNotifyDiscontinued(status.retirement)
-    }
-
-    maybeNotifyUpdateAvailable(status, 'client')
-    void refreshDesktopVersion()
-
-    return status
-  } catch (error) {
-    const previous = $updateStatus.get()
-
-    const fallback: DesktopUpdateStatus = {
-      supported: previous?.supported ?? true,
-      branch: previous?.branch,
-      error: 'check-failed',
-      message: error instanceof Error ? error.message : String(error),
-      fetchedAt: Date.now()
-    }
-
-    $updateStatus.set(fallback)
-
-    return fallback
-  } finally {
-    $updateChecking.set(false)
-  }
+  void force
+  // Holo has no official update channel. Never probe or download one.
+  return $updateStatus.get()
 }
 
 export type SourceUpdateChannel = 'main' | 'stable'

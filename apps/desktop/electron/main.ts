@@ -697,7 +697,7 @@ import {
   inspectWindowsSupport,
   probeWindowsRemote,
   terminateOwnedWindowsDashboardForUpdate
-} from './windows-remote-lifecycle'
+} from './windows-remote-core'
 import {
   alreadyHasNoSandbox,
   buildNoSandboxRelaunchArgs,
@@ -11291,8 +11291,12 @@ async function restartLocalGatewayOwner(ownerProfile: string): Promise<void> {
 }
 
 // A ready gateway whose boot commit differs from this Hermes (it outlived `hermes update`) is
-// restarted once before attaching instead of being re-attached on every dial.
-const restartStaleLocalGateway = createStaleGatewayRestarter(restartLocalGatewayOwner, rememberLog)
+// restarted once before attaching instead of being re-attached on every dial. Holo shares the
+// user's primary gateway and must never restart that separately-owned process on launch.
+const restartStaleLocalGateway =
+  process.env.HERMES_DESKTOP_DISABLE_STALE_GATEWAY_RESTART === '1'
+    ? undefined
+    : createStaleGatewayRestarter(restartLocalGatewayOwner, rememberLog)
 
 // Models-page "Restart Hermes": restart the local gateway behind `profile`'s cached descriptor.
 // A remote/SSH descriptor has no gatewayEndpoint, so nothing local is touched for it.

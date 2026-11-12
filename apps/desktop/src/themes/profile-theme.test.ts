@@ -7,6 +7,7 @@ import { DEFAULT_SKIN_NAME } from './presets'
 interface Pref {
   resolve: (profile: string) => string
   assign: (profile: string, value: string) => void
+  stored: (profile: string) => null | string
 }
 
 const cases = [
@@ -16,12 +17,23 @@ const cases = [
     fallback: DEFAULT_SKIN_NAME,
     a: 'ember',
     b: 'catppuccin',
+    resolvedA: 'ember',
+    resolvedB: 'catppuccin',
     junk: 'nope'
   },
-  { name: 'mode', pref: modePref as unknown as Pref, fallback: 'system', a: 'dark', b: 'light', junk: 'dusk' }
+  {
+    name: 'mode',
+    pref: modePref as unknown as Pref,
+    fallback: 'light',
+    a: 'dark',
+    b: 'light',
+    resolvedA: 'light',
+    resolvedB: 'light',
+    junk: 'dusk'
+  }
 ]
 
-describe.each(cases)('per-profile $name', ({ pref, fallback, a, b, junk }) => {
+describe.each(cases)('per-profile $name', ({ pref, fallback, a, b, resolvedA, resolvedB, junk }) => {
   beforeEach(() => window.localStorage.clear())
 
   it('falls back to the default when unassigned', () => {
@@ -29,16 +41,19 @@ describe.each(cases)('per-profile $name', ({ pref, fallback, a, b, junk }) => {
     expect(pref.resolve('work')).toBe(fallback)
   })
 
-  it('keeps each profile on its own value', () => {
+  it('stores each profile pick independently and resolves it under the current appearance policy', () => {
     pref.assign('work', a)
     pref.assign('default', b)
-    expect(pref.resolve('work')).toBe(a)
-    expect(pref.resolve('default')).toBe(b)
+    expect(pref.stored('work')).toBe(a)
+    expect(pref.stored('default')).toBe(b)
+    expect(pref.resolve('work')).toBe(resolvedA)
+    expect(pref.resolve('default')).toBe(resolvedB)
   })
 
   it('lets unassigned profiles inherit the default profile as the global fallback', () => {
     pref.assign('default', a)
-    expect(pref.resolve('never-themed')).toBe(a)
+    expect(pref.stored('never-themed')).toBe(a)
+    expect(pref.resolve('never-themed')).toBe(resolvedA)
   })
 
   it('normalizes an unknown stored value back to the default', () => {
@@ -47,30 +62,35 @@ describe.each(cases)('per-profile $name', ({ pref, fallback, a, b, junk }) => {
   })
 })
 // #101216: named-profile assign must seed the global fallback so a Bot Mode
-// gateway hop onto a never-themed bot does not resolve `system`.
+// gateway hop inherits the stored pick, while Holo still resolves every mode to light.
 describe('named-profile appearance seeds the global fallback (#101216)', () => {
   beforeEach(() => window.localStorage.clear())
 
-  it('lets a never-themed bot profile inherit Dark set on the launch profile', () => {
+  it('keeps a never-themed bot light when the launch profile has a legacy Dark assignment', () => {
     modePref.assign('forge', 'dark')
-    expect(modePref.resolve('atlas')).toBe('dark')
+    expect(modePref.stored('atlas')).toBe('dark')
+    expect(modePref.resolve('atlas')).toBe('light')
   })
 
-  it('keeps an explicit per-profile override over the global fallback', () => {
+  it('keeps an explicit per-profile override while normalizing both profiles to light', () => {
     modePref.assign('forge', 'dark')
     modePref.assign('atlas', 'light')
-    expect(modePref.resolve('forge')).toBe('dark')
+    expect(modePref.stored('forge')).toBe('dark')
+    expect(modePref.stored('atlas')).toBe('light')
+    expect(modePref.resolve('forge')).toBe('light')
     expect(modePref.resolve('atlas')).toBe('light')
   })
 
   it('lets a never-themed profile inherit the last named-profile assign', () => {
     modePref.assign('forge', 'dark')
     modePref.assign('atlas', 'light')
+    expect(modePref.stored('never-themed')).toBe('light')
     expect(modePref.resolve('never-themed')).toBe('light')
   })
 
-  it('promotes a unanimous pre-existing per-profile mode into the empty global slot', () => {
+  it('promotes a unanimous pre-existing per-profile mode but resolves it as light', () => {
     window.localStorage.setItem('hermes-desktop-profile-modes-v1', JSON.stringify({ forge: 'dark' }))
-    expect(modePref.resolve('atlas')).toBe('dark')
+    expect(modePref.stored('atlas')).toBe('dark')
+    expect(modePref.resolve('atlas')).toBe('light')
   })
 })

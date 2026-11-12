@@ -1,5 +1,4 @@
 import type { Translations } from '@/i18n'
-import { servedByHermesCloud } from '@/lib/hermes-cloud-host'
 import { hostHas } from '@/lib/host-capabilities'
 import { NATIVE_NOTIFICATION_KINDS } from '@/store/native-notifications'
 import { canUseQuickEntry } from '@/store/quick-entry'
@@ -269,8 +268,9 @@ export const SETTINGS_MANIFEST = {
   },
   about: {
     updates: {
-      // A Webapp served by Hermes Cloud renders no Updates section.
-      available: () => !servedByHermesCloud(),
+      // Holo ships no official update channel. The id is retained only so the
+      // inert update overlay's settings deep-link keeps a valid target; it never renders.
+      available: () => false,
       subpage: 'updates',
       keywords: ['update', 'auto update', 'download', 'release', 'version'],
       copy: t => ({ label: t.settings.about.updates })

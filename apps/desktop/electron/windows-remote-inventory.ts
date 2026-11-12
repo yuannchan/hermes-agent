@@ -1,5 +1,5 @@
 import { parseRemoteProfileListing } from './connection-registry'
-import { assertWindowsRemoteInstallUpdateClear, helper } from './windows-remote-lifecycle'
+import { assertWindowsRemoteInstallUpdateClear, helper } from './windows-remote-core'
 import type { WindowsRuntime } from './windows-runtime-command'
 
 // The runtime helper reads through the install's own root and profile predicate;

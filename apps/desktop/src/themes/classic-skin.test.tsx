@@ -58,7 +58,7 @@ async function launch(localSkin: typeof stockDefaultSkin | null) {
   return { api, bootPaint, connect }
 }
 
-describe('Classic Hermes is an explicit Desktop pick, never inferred from stock config (#76579)', () => {
+describe('Holo is the default and Classic Hermes is an explicit light-locked pick (#76579)', () => {
   beforeEach(() => window.localStorage.clear())
 
   afterEach(() => {
@@ -71,29 +71,30 @@ describe('Classic Hermes is an explicit Desktop pick, never inferred from stock 
   it.each([
     ['display.skin: default', stockDefaultSkin],
     ['display.skin unset', null]
-  ])('a stock user (%s) with no Desktop pick paints Nous on boot, connect and relaunch', async (_label, local) => {
+  ])('a stock user (%s) with no Desktop pick paints Holo on boot, connect and relaunch', async (_label, local) => {
     let run = await launch(local)
-    expect(run.bootPaint).toBe('nous')
+    expect(run.bootPaint).toBe('holo')
     run.connect()
     run.connect() // reconnect re-seed
-    expect(run.api.theme?.themeName).toBe('nous')
-    expect(paintedSkin()).toBe('nous')
+    expect(run.api.theme?.themeName).toBe('holo')
+    expect(paintedSkin()).toBe('holo')
 
     run = await launch(local)
-    expect(run.bootPaint).toBe('nous')
+    expect(run.bootPaint).toBe('holo')
     run.connect()
-    expect(paintedSkin()).toBe('nous')
+    expect(paintedSkin()).toBe('holo')
   })
 
-  it('a Classic pick paints gold/navy (dark mode) and survives connect, reconnect and relaunch; a later Nous pick sticks', async () => {
+  it('a Classic pick keeps its readable gold light palette through connect, reconnect and relaunch; a later Holo pick sticks', async () => {
     let run = await launch(stockDefaultSkin)
     expect(run.api.theme?.availableThemes.find(t => t.name === 'classic')?.label).toBe('Classic Hermes')
 
     act(() => run.api.theme?.setMode('dark'))
     act(() => run.api.theme?.setTheme('classic'))
     expect(paintedSkin()).toBe('classic')
-    expect(cssVar('--theme-background-seed')).toBe('#1a1a2e')
-    expect(cssVar('--theme-primary').toLowerCase()).toBe('#ffbf00')
+    expect(run.api.theme?.resolvedMode).toBe('light')
+    expect(cssVar('--theme-background-seed')).toBe('#f5f5f5')
+    expect(cssVar('--theme-primary').toLowerCase()).toBe('#825d02')
 
     run.connect()
     run.connect()
@@ -103,27 +104,25 @@ describe('Classic Hermes is an explicit Desktop pick, never inferred from stock 
     expect(run.bootPaint).toBe('classic')
     run.connect()
     expect(paintedSkin()).toBe('classic')
-    expect(cssVar('--theme-background-seed')).toBe('#1a1a2e')
+    expect(cssVar('--theme-background-seed')).toBe('#f5f5f5')
 
-    act(() => run.api.theme?.setTheme('nous'))
+    act(() => run.api.theme?.setTheme('holo'))
     run = await launch(stockDefaultSkin)
     run.connect()
-    expect(run.bootPaint).toBe('nous')
-    expect(paintedSkin()).toBe('nous')
+    expect(run.bootPaint).toBe('holo')
+    expect(paintedSkin()).toBe('holo')
   })
 
-  it('/skin gold and /skin hermes select Classic; /skin default stays the Desktop default (Nous)', async () => {
+  it('/skin hermes selects Classic; every retired Nous/default alias selects Holo', async () => {
     const run = await launch(stockDefaultSkin)
 
-    act(() => void run.api.skin?.('gold'))
-    expect(run.api.theme?.themeName).toBe('classic')
+    for (const alias of ['default', 'nous', 'nous-light', 'nous-alt', 'gold']) {
+      act(() => void run.api.skin?.('hermes'))
+      expect(run.api.theme?.themeName).toBe('classic')
 
-    act(() => void run.api.skin?.('nous'))
-    act(() => void run.api.skin?.('hermes'))
-    expect(run.api.theme?.themeName).toBe('classic')
-
-    act(() => void run.api.skin?.('default'))
-    expect(run.api.theme?.themeName).toBe('nous')
+      act(() => void run.api.skin?.(alias))
+      expect(run.api.theme?.themeName).toBe('holo')
+    }
   })
 
   it('a cache left by the reverted #130015 build (CLI `default` as "Classic Hermes") shows ONE Classic and is purged', async () => {
@@ -149,7 +148,7 @@ describe('Classic Hermes is an explicit Desktop pick, never inferred from stock 
     expect(JSON.parse(window.localStorage.getItem(BACKEND_THEMES_KEY) ?? '{}')).not.toHaveProperty('default')
   })
 
-  it('Classic follows the light/dark toggle: a light surface in light mode, gold on navy in dark, both readable', async () => {
+  it('Classic stays on its readable light palette even when dark mode is requested', async () => {
     const run = await launch(stockDefaultSkin)
     act(() => run.api.theme?.setTheme('classic'))
 
@@ -160,8 +159,11 @@ describe('Classic Hermes is an explicit Desktop pick, never inferred from stock 
     expect(contrastRatio(cssVar('--theme-primary'), cssVar('--theme-sidebar-seed'))).toBeGreaterThanOrEqual(4.5)
 
     act(() => run.api.theme?.setMode('dark'))
-    expect(window.document.documentElement.dataset.hermesMode).toBe('dark')
-    expect(cssVar('--theme-background-seed')).toBe('#1a1a2e')
+    expect(run.api.theme?.mode).toBe('light')
+    expect(run.api.theme?.resolvedMode).toBe('light')
+    expect(window.document.documentElement.dataset.hermesMode).toBe('light')
+    expect(cssVar('--theme-background-seed')).toBe('#f5f5f5')
+    expect(cssVar('--theme-primary').toLowerCase()).toBe('#825d02')
     expect(contrastRatio(cssVar('--theme-foreground'), cssVar('--theme-background-seed'))).toBeGreaterThanOrEqual(4.5)
   })
 })

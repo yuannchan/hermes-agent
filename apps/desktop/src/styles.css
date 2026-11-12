@@ -2006,6 +2006,78 @@ body.guest-pointer-lock :is(webview, iframe) {
   line-height: 1.45;
 }
 
+/* Holo's empty-chat crest: compact wordmark, warm wheat detailing, and the
+   same wolf emblem as the window icon. The fitted lettering must never grow
+   into a viewport-sized billboard just because its name is only four letters. */
+.holo-intro {
+  position: relative;
+}
+
+.holo-intro-emblem {
+  position: relative;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin: 0 auto 1rem;
+}
+
+.holo-intro-emblem img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 1px solid color-mix(in srgb, var(--ui-accent) 42%, transparent);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 32px color-mix(in srgb, var(--ui-accent) 13%, transparent);
+}
+
+.holo-intro-apple {
+  position: absolute;
+  right: -0.55rem;
+  bottom: -0.35rem;
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--ui-accent) 34%, transparent);
+  border-radius: 999px;
+  background: var(--ui-panel-background);
+  font-size: 1rem;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--ui-accent) 12%, transparent);
+}
+
+.holo-wordmark {
+  --fit-max: 5.5rem;
+
+  color: var(--ui-accent);
+  text-shadow: 0 5px 24px color-mix(in srgb, var(--ui-accent) 14%, transparent);
+}
+
+.holo-intro-subtitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  color: var(--ui-accent);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  opacity: 0.82;
+}
+
+.holo-intro-subtitle [aria-hidden='true'] {
+  font-size: 0.875rem;
+  letter-spacing: 0;
+}
+
+.holo-intro-greeting {
+  margin: 1rem 0 0.45rem;
+  color: var(--ui-text-secondary);
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', Georgia, serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
 .fit-text {
   --fit-captured-length: initial;
   --fit-support-sentinel: var(--fit-captured-length, 9999px);

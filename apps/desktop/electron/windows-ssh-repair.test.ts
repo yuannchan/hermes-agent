@@ -7,7 +7,7 @@ import path from 'node:path'
 import { test } from 'vitest'
 
 import { listRemoteHermesProfiles, readRemoteInstallId } from './remote-lifecycle'
-import { assertWindowsRemoteInstallUpdateClear, connectWindowsRemote, decodePowerShellCommand, probeWindowsFiles, probeWindowsRemote, windowsHelperOwnsRuntime } from './windows-remote-lifecycle'
+import { assertWindowsRemoteInstallUpdateClear, connectWindowsRemote, decodePowerShellCommand, probeWindowsFiles, probeWindowsRemote, windowsHelperOwnsRuntime } from './windows-remote-core'
 
 const runtime = {
   os: 'Windows', arch: 'AMD64', hermesHome: 'C:\\Users\\A\\AppData\\Local\\hermes',

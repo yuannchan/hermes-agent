@@ -57,13 +57,14 @@ describe('requestTheme', () => {
     expect(skinPref.resolve('default')).toBe('midnight')
   })
 
-  it('switches and persists light/dark from outside React', () => {
+  it('keeps light locked and persists light when dark is requested from outside React', () => {
     renderProbe()
 
     act(() => requestMode('dark'))
 
-    expect(ctx.mode).toBe('dark')
-    expect(modePref.resolve('default')).toBe('dark')
+    expect(ctx.mode).toBe('light')
+    expect(ctx.resolvedMode).toBe('light')
+    expect(modePref.resolve('default')).toBe('light')
   })
 
   it('refuses a name that does not resolve, leaving the appearance untouched', () => {

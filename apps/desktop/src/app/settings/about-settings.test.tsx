@@ -1,9 +1,8 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { DesktopUpdateStatus, DesktopVersionInfo, HermesConnection } from '@/global'
 import { en } from '@/i18n/en'
-import { $confirmRequest, settleConfirm } from '@/store/confirm'
 import type * as SessionStore from '@/store/session'
 import { $connection } from '@/store/session'
 import type * as UpdatesStore from '@/store/updates'
@@ -94,36 +93,42 @@ describe('AboutSettings', (): void => {
     cleanup()
   })
 
-  it('shows shared version details and refreshes each remote gateway independently', (): void => {
+  it('shows shared version details without client or backend update controls', (): void => {
     const { rerender } = render(<AboutSettings />)
 
     expect(screen.getByRole('heading', { name: en.updates.appName })).toBeTruthy()
     expect(screen.getByText(en.updates.versionDetailsInstallId)).toBeTruthy()
-    expect(screen.getByText(en.updates.latestBody)).toBeTruthy()
+    expect(screen.queryByText(en.updates.latestBody)).toBeNull()
     expect(screen.queryByText(en.updates.latestBodyBackend)).toBeNull()
+    expect(screen.queryByRole('button', { name: en.updates.checkNow })).toBeNull()
     expect(refreshDesktopVersion).toHaveBeenCalledTimes(1)
+    expect(checkUpdates).not.toHaveBeenCalled()
     expect(checkBackendUpdates).not.toHaveBeenCalled()
 
     $connection.set(connection('remote'))
     rerender(<AboutSettings />)
 
-    expect(screen.getByText(en.updates.latestBodyBackend)).toBeTruthy()
-    expect(checkBackendUpdates).toHaveBeenCalledTimes(1)
-    expect(screen.getAllByRole('link', { name: en.updates.releaseNotes })).toHaveLength(1)
+    expect(screen.queryByText(en.updates.latestBodyBackend)).toBeNull()
+    expect(screen.queryByRole('link', { name: en.updates.releaseNotes })).toBeNull()
+    expect(checkBackendUpdates).not.toHaveBeenCalled()
 
     $connection.set({ ...connection('remote'), baseUrl: 'http://other-gateway:9119' })
     rerender(<AboutSettings />)
 
-    expect(refreshDesktopVersion).toHaveBeenCalledTimes(3)
-    expect(checkBackendUpdates).toHaveBeenCalledTimes(2)
+    // About refreshes the desktop's own version once per mount, not per gateway.
+    expect(refreshDesktopVersion).toHaveBeenCalledTimes(1)
+    expect(checkBackendUpdates).not.toHaveBeenCalled()
   })
 
-  it('hides the Hermes Cloud backend update card and never checks it', (): void => {
+  it('keeps a Hermes Cloud remote gateway on version details only', (): void => {
     $connection.set({ ...connection('remote'), baseUrl: 'https://lab.agents.nousresearch.com', remoteKind: 'cloud' })
     render(<AboutSettings />)
 
-    expect(screen.getByText(en.updates.latestBody)).toBeTruthy()
+    expect(screen.getByText(en.updates.versionDetailsInstallId)).toBeTruthy()
+    expect(screen.queryByText(en.updates.latestBody)).toBeNull()
     expect(screen.queryByText(en.updates.latestBodyBackend)).toBeNull()
+    expect(screen.queryByRole('button', { name: en.updates.updateNow })).toBeNull()
+    expect(checkUpdates).not.toHaveBeenCalled()
     expect(checkBackendUpdates).not.toHaveBeenCalled()
   })
 
@@ -134,80 +139,49 @@ describe('AboutSettings', (): void => {
     expect(screen.queryByRole('combobox')).toBeNull()
   })
 
-  it('lets a source checkout pick its channel and confirms the move to stable releases', async (): Promise<void> => {
+  it('shows a source checkout channel as read-only version details', (): void => {
     const about = en.settings.about.channel
-    const source = { supported: true, behind: 0, mechanism: 'posix-handoff', channelSelectable: true } as const
-    // The save resolves only when released, so the in-flight paint is observable.
-    let release!: () => void
-    vi.mocked(setUpdateChannel).mockImplementationOnce(
-      () => new Promise(resolve => (release = () => resolve({ ...source, channel: 'stable' })))
-    )
-    $updateStatus.set({ ...source, branch: 'main' })
+    $updateStatus.set({
+      supported: true,
+      behind: 0,
+      mechanism: 'posix-handoff',
+      channelSelectable: true,
+      branch: 'main'
+    })
     render(<AboutSettings />)
-    expect(screen.getByRole('button', { name: about.main }).getAttribute('aria-pressed')).toBe('true')
 
-    fireEvent.click(screen.getByRole('button', { name: about.stable }))
-    await waitFor((): void => {
-      expect($confirmRequest.get()?.title).toBe(about.stableConfirmTitle)
-    })
-    expect(setUpdateChannel).not.toHaveBeenCalled()
-    settleConfirm(true)
-    await waitFor((): void => {
-      expect(setUpdateChannel).toHaveBeenCalledWith('stable')
-    })
-    // The confirmed choice shows while the save + check is still running.
-    expect(screen.getByRole('button', { name: about.stable }).getAttribute('aria-pressed')).toBe('true')
-    release()
-
-    // Back to every commit is never older code, so it needs no confirmation.
-    $updateStatus.set({ ...source, channel: 'stable' })
-    await waitFor((): void => {
-      expect(screen.getByRole('button', { name: about.stable }).getAttribute('aria-pressed')).toBe('true')
-    })
-    fireEvent.click(screen.getByRole('button', { name: about.main }))
-    await waitFor((): void => {
-      expect(setUpdateChannel).toHaveBeenCalledWith('main')
-    })
-    expect($confirmRequest.get()).toBeNull()
-
-    // An older runtime cannot save a channel, and a packaged install owns its own.
-    $updateStatus.set({ ...source, channel: 'stable', channelSelectable: undefined })
-    await waitFor((): void => {
-      expect(screen.queryByText(about.title)).toBeNull()
-    })
-    $updateStatus.set({ ...source, mechanism: 'electron-updater', channel: 'stable' })
+    expect(screen.getByText(about.detailsLabel)).toBeTruthy()
+    expect(screen.getByText(`${about.main} (main)`)).toBeTruthy()
+    expect(screen.queryByRole('button', { name: about.main })).toBeNull()
+    expect(screen.queryByRole('button', { name: about.stable })).toBeNull()
     expect(screen.queryByText(about.title)).toBeNull()
+    expect(setUpdateChannel).not.toHaveBeenCalled()
   })
 
-  it('a commit client refuses updates without hiding an unrelated backend update', (): void => {
-    const message: string = "This build doesn't get updates. Ask the developer who gave it to you for a new build."
+  it('keeps commit-build and backend update status out of About', (): void => {
+    const message = "This build doesn't get updates. Ask the developer who gave it to you for a new build."
     $connection.set(connection('remote'))
     $desktopVersion.set({ ...$desktopVersion.get()!, source: 'commit-build' })
     $updateStatus.set({ supported: false, mechanism: 'external', reason: 'commit-build', message })
     $backendUpdateStatus.set({ supported: true, behind: 3 })
     render(<AboutSettings />)
-    expect(screen.getByText(message)).toBeTruthy()
-    expect(screen.getAllByRole('button', { name: en.updates.checkNow })).toHaveLength(1)
-    fireEvent.click(screen.getByRole('button', { name: en.updates.updateNow }))
-    expect(startActiveUpdate).toHaveBeenCalledWith('backend')
+
+    expect(screen.getByText(en.updates.versionDetailsInstallId)).toBeTruthy()
+    expect(screen.queryByText(message)).toBeNull()
+    expect(screen.queryByRole('button', { name: en.updates.checkNow })).toBeNull()
+    expect(screen.queryByRole('button', { name: en.updates.updateNow })).toBeNull()
+    expect(startActiveUpdate).not.toHaveBeenCalled()
+    expect(checkBackendUpdates).not.toHaveBeenCalled()
   })
 
-  it('forces a fresh check only for the card the user checks', async (): Promise<void> => {
+  it('does not expose fresh-check controls for either update target', (): void => {
     $connection.set(connection('remote'))
     render(<AboutSettings />)
-    vi.mocked(checkBackendUpdates).mockClear()
 
-    const buttons = screen.getAllByRole('button', { name: en.updates.checkNow })
-    fireEvent.click(buttons[0])
-    await waitFor((): void => {
-      expect(checkUpdates).toHaveBeenCalledWith({ force: true })
-    })
+    expect(screen.queryAllByRole('button', { name: en.updates.checkNow })).toHaveLength(0)
+    expect(checkUpdates).not.toHaveBeenCalled()
     expect(checkBackendUpdates).not.toHaveBeenCalled()
-
-    fireEvent.click(buttons[1])
-    await waitFor((): void => {
-      expect(checkBackendUpdates).toHaveBeenCalledWith({ force: true })
-    })
-    expect(checkUpdates).toHaveBeenCalledTimes(1)
+    expect(startActiveUpdate).not.toHaveBeenCalled()
+    expect(refreshDesktopVersion).toHaveBeenCalledTimes(1)
   })
 })

@@ -49,7 +49,7 @@ afterEach(() => {
 })
 
 describe('buildDesktopOverlay', () => {
-  it('snapshots skin, mode, rail color, and the layout tree for the profile', () => {
+  it('snapshots skin, light-locked mode, rail color, and the layout tree for the profile', () => {
     skinPref.assign('glam', 'mono')
     modePref.assign('glam', 'dark')
     setProfileColor('glam', '#e91e63')
@@ -58,7 +58,7 @@ describe('buildDesktopOverlay', () => {
 
     expect(overlay.version).toBe(1)
     expect(overlay.skin).toBe('mono')
-    expect(overlay.mode).toBe('dark')
+    expect(overlay.mode).toBe('light')
     expect(overlay.profileColor).toBe('#e91e63')
     // Built-in skin → no bundled theme definitions.
     expect(overlay.themes).toBeUndefined()
@@ -76,7 +76,7 @@ describe('buildDesktopOverlay', () => {
 })
 
 describe('applyDesktopOverlay', () => {
-  it('installs bundled themes and assigns skin/mode/color to the new profile', () => {
+  it('installs bundled themes, assigns skin/color, and normalizes imported dark mode to light', () => {
     applyDesktopOverlay('glam-copy', {
       version: 1,
       skin: 'rose-quartz',
@@ -87,7 +87,7 @@ describe('applyDesktopOverlay', () => {
 
     expect($userThemes.get()['rose-quartz']).toEqual(roseTheme)
     expect(skinPref.resolve('glam-copy')).toBe('rose-quartz')
-    expect(modePref.resolve('glam-copy')).toBe('dark')
+    expect(modePref.resolve('glam-copy')).toBe('light')
     expect($profileColors.get()['glam-copy']).toBe('#e91e63')
   })
 
@@ -118,7 +118,10 @@ describe('runExportProfileFlow', () => {
     const { runExportProfileFlow } = await import('./profile-share')
     const { $notifications } = await import('./notifications')
     seedWebappSession('served-token')
-    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}')))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('{}'))
+    )
 
     try {
       expect(installBrowserDesktopBridge()).toBe(true)

@@ -143,8 +143,9 @@ describe('settings subpage routing', () => {
         'Guided Tours',
         'Keep computer awake',
         'Auto-archive stale chats',
-        TRANSLATIONS.en.settings.about.updates
+        'Diagnostics'
       ])
     )
+    expect(targets.map(target => target.label)).not.toContain(TRANSLATIONS.en.settings.about.updates)
   })
 })

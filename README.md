@@ -2,7 +2,9 @@
   <img src="assets/banner.png" alt="Hermes Agent" width="100%">
 </p>
 
-# Hermes Agent ☤
+# Hermes QX ☤
+
+> **Hermes QX** is QX's personal patched edition of [Nous Research Hermes Agent](https://github.com/NousResearch/hermes-agent). It keeps the internal `hermes` command and upstream compatibility while carrying separately reviewed local fixes. The QX trial launcher uses a separate application-data directory and runs in source mode, isolated from the installed official app.
 <p align="center">
   <a href="https://hermes-agent.nousresearch.com/">Hermes Agent</a> | <a href="https://hermes-agent.nousresearch.com/">Hermes Desktop</a>
 </p>

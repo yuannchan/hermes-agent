@@ -60,10 +60,8 @@ import { ProviderConfigPanel } from './memory/provider-config-panel'
 import { ModelSettings, ModelSettingsSkeleton } from './model-settings'
 import { OnboardingSettings } from './onboarding-settings'
 import { EmptyState, ListRow, SettingsContent, SettingsSkeleton, ToggleRow } from './primitives'
-import { SettingsProfileScope } from './profile-scope'
 import { QuickEntrySettings } from './quick-entry-settings'
 import { SETTING_IDS, settingElementId } from './settings-manifest'
-import { SharedMetricsSettings } from './shared-metrics-settings'
 import { useSettingDeepLink } from './use-setting-deep-link'
 
 export function ConfigSettings({
@@ -327,7 +325,6 @@ function ConfigSettingsInner({
 
   const showDesktopSettings = activeSectionId === 'advanced' && (subpage === undefined || subpage === 'desktop')
   const showAttachments = activeSectionId === 'chat' && (subpage === undefined || subpage === 'attachments')
-  const showSharedMetrics = activeSectionId === 'safety' && subpage === 'privacy'
 
   // Deep-link target from the command palette (?field=<key>): scroll the row
   // into view and flash it, then drop the param so it doesn't re-fire.
@@ -399,7 +396,6 @@ function ConfigSettingsInner({
   // selecting siblings or returning to the first page through the parent.
   const renderPage = (children: ReactNode) => (
     <SettingsContent>
-      <SettingsProfileScope className="mb-5" />
       {activeSectionId === 'model' && (
         <div className={showModelSettings ? 'mb-6' : undefined}>
           <ModelSettings onMainModelChanged={onMainModelChanged} scopeProfile={scopeProfile} subpage={subpage} />
@@ -445,7 +441,6 @@ function ConfigSettingsInner({
     if (showModelSettings) {
       return (
         <SettingsContent>
-          <SettingsProfileScope className="mb-5" />
           <div className="mb-6">
             <ModelSettingsSkeleton subpage={subpage} />
           </div>
@@ -464,7 +459,7 @@ function ConfigSettingsInner({
     visibleFields.length === 0 &&
     (subpage === undefined
       ? activeSectionId !== 'chat'
-      : !showModelSettings && !showDesktopSettings && !showAttachments && !showSharedMetrics)
+      : !showModelSettings && !showDesktopSettings && !showAttachments)
 
   return renderPage(
     <>
@@ -509,9 +504,7 @@ function ConfigSettingsInner({
           where image-attachment behavior already lives, so this sits above the
           schema fields for that section. */}
       {showAttachments ? <AttachmentSizeSetting /> : null}
-      {/* Shared metrics are two coupled opt-ins with a consent side effect, so they
-          go through their own RPC rather than the generic field autosave. */}
-      {showSharedMetrics ? <SharedMetricsSettings /> : null}
+      {/* Holo does not collect or send shared metrics. */}
       <MemoryLayersSlot
         builtin={{
           memory: getNested(config, 'memory.memory_enabled') !== false,

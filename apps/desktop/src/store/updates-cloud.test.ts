@@ -41,6 +41,11 @@ beforeEach(() => {
   checkHermesUpdateSpy.mockResolvedValue({ behind: 1, can_apply: true, current_version: '1', update_available: true })
   updateHermesSpy.mockResolvedValue({ ok: true, name: 'hermes-update' })
   window.hermesDesktop = { updates: { apply: clientApply, check: clientCheck, onProgress: () => () => {} } } as never
+  updates.$updateStatus.set(null)
+  updates.$backendUpdateStatus.set(null)
+  updates.$updateChecking.set(false)
+  updates.$backendUpdateChecking.set(false)
+  updates.$updateOverlayTarget.set('backend')
   updates.$updateOverlayOpen.set(false)
 })
 
@@ -70,7 +75,7 @@ describe('update entry points under Hermes Cloud', () => {
     expect(updates.$updateOverlayOpen.get()).toBe(false)
   })
 
-  it('native Desktop connected to a Cloud agent still updates its own app, never the agent', async () => {
+  it('native Desktop connected to a Cloud agent keeps its own cached app state and never updates the agent', async () => {
     setConnection(remote('https://lab.agents.nousresearch.com'))
 
     await updates.checkBackendUpdates({ force: true })
@@ -78,21 +83,32 @@ describe('update entry points under Hermes Cloud', () => {
     expect(checkHermesUpdateSpy).not.toHaveBeenCalled()
     expect(updateHermesSpy).not.toHaveBeenCalled()
 
-    await updates.checkUpdates({ force: true })
-    expect(clientCheck).toHaveBeenCalled()
+    const cached = { supported: true, behind: 2, targetSha: 'a' }
+    updates.$updateStatus.set(cached)
+    await expect(updates.checkUpdates({ force: true })).resolves.toBe(cached)
+    expect(clientCheck).not.toHaveBeenCalled()
+    expect(updates.$updateStatus.get()).toBe(cached)
+
     updates.openUpdateOverlayFor('client')
     expect(updates.$updateOverlayOpen.get()).toBe(true)
+    expect(updates.$updateOverlayTarget.get()).toBe('client')
+    expect(clientCheck).not.toHaveBeenCalled()
   })
 
-  it('the generic Update command on Desktop connected to Cloud updates this app and skips the agent', async () => {
+  it('the generic Update command on Desktop connected to Cloud stays inert for this app and the agent', () => {
     setConnection(remote('https://lab.agents.nousresearch.com'))
-    updates.$updateStatus.set({ supported: true, behind: 2, targetSha: 'a' })
+    const cached = { supported: true, behind: 2, targetSha: 'a' }
+    updates.$updateStatus.set(cached)
 
     updates.startActiveUpdate()
 
-    await vi.waitFor(() => expect(clientApply).toHaveBeenCalled())
-    expect(updates.$updateOverlayTarget.get()).toBe('client')
+    expect(clientApply).not.toHaveBeenCalled()
+    expect(clientCheck).not.toHaveBeenCalled()
     expect(updateHermesSpy).not.toHaveBeenCalled()
+    expect(checkHermesUpdateSpy).not.toHaveBeenCalled()
+    expect(updates.$updateStatus.get()).toBe(cached)
+    expect(updates.$updateOverlayTarget.get()).toBe('backend')
+    expect(updates.$updateOverlayOpen.get()).toBe(false)
   })
 
   it('a Cloud-served tab running older code than its agent offers Reload, not an updater', () => {
