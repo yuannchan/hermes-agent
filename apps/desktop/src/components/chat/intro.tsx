@@ -179,7 +179,6 @@ export function Intro({ personality, seed }: IntroProps) {
       <div className="holo-intro w-full min-w-0">
         <div aria-hidden="true" className="holo-intro-emblem">
           <img alt="" src={HOLO_ICON} />
-          <span className="holo-intro-apple">🍎</span>
         </div>
         <Wordmark
           className="holo-wordmark mb-1"
@@ -188,11 +187,8 @@ export function Intro({ personality, seed }: IntroProps) {
           width="min(22rem, calc(100% - 2rem))"
         />
         <div className="holo-intro-subtitle">
-          <span aria-hidden="true">🌾</span>
-          <span>WISE WOLF OF YOITZ</span>
-          <span aria-hidden="true">🌾</span>
+          <span>A PERSONAL FORK OF HERMES AGENT</span>
         </div>
-        <p className="holo-intro-greeting">咱是赫萝，约伊兹的贤狼。</p>
         <p className="m-0 text-center leading-normal tracking-tight">{body}</p>
       </div>
     </div>

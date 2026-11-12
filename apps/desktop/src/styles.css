@@ -2029,20 +2029,6 @@ body.guest-pointer-lock :is(webview, iframe) {
   box-shadow: 0 10px 32px color-mix(in srgb, var(--ui-accent) 13%, transparent);
 }
 
-.holo-intro-apple {
-  position: absolute;
-  right: -0.55rem;
-  bottom: -0.35rem;
-  display: grid;
-  width: 1.65rem;
-  height: 1.65rem;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--ui-accent) 34%, transparent);
-  border-radius: 999px;
-  background: var(--ui-panel-background);
-  font-size: 1rem;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--ui-accent) 12%, transparent);
-}
 
 .holo-wordmark {
   --fit-max: 5.5rem;
@@ -2065,18 +2051,6 @@ body.guest-pointer-lock :is(webview, iframe) {
   opacity: 0.82;
 }
 
-.holo-intro-subtitle [aria-hidden='true'] {
-  font-size: 0.875rem;
-  letter-spacing: 0;
-}
-
-.holo-intro-greeting {
-  margin: 1rem 0 0.45rem;
-  color: var(--ui-text-secondary);
-  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', Georgia, serif;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-}
 
 .fit-text {
   --fit-captured-length: initial;
