@@ -1194,11 +1194,23 @@ def _live_memory_block(review_agent: Any) -> str:
     if store is None:
         return ""
     from tools.memory_tool_store import ENTRY_DELIMITER
+    from tools.threat_patterns import scan_for_threats
 
-    parts = [f"{name} now:\n" + ENTRY_DELIMITER.join(entries)
-             for name, entries, on in (
-                 ("MEMORY.md", getattr(store, "memory_entries", None), getattr(review_agent, "_memory_enabled", False)),
-                 ("USER.md", getattr(store, "user_entries", None), getattr(review_agent, "_user_profile_enabled", False)))
+    def _sanitize(entry, filename, target):
+        # Match MemoryStore.load_from_disk(): raw live entries remain available to the user,
+        # but threat hits must never cross into the review model's user message.
+        findings = scan_for_threats(entry, scope="strict") if entry and not entry.startswith("[BLOCKED:") else None
+        if not findings:
+            return entry
+        logger.warning("Memory entry from %s blocked from background review: %s", filename, ", ".join(findings))
+        return (f"[BLOCKED: {filename} entry contained threat pattern(s): {', '.join(findings)}. "
+                f"Removed from system prompt; use memory(action=remove, target='{target}') "
+                f"to delete the original.]")
+
+    parts = [f"{name} now:\n" + ENTRY_DELIMITER.join(_sanitize(entry, name, target) for entry in entries)
+             for name, target, entries, on in (
+                 ("MEMORY.md", "memory", getattr(store, "memory_entries", None), getattr(review_agent, "_memory_enabled", False)),
+                 ("USER.md", "user", getattr(store, "user_entries", None), getattr(review_agent, "_user_profile_enabled", False)))
              if on and entries]
     if not parts:
         return ""
@@ -1250,7 +1262,7 @@ def _run_review_fork(
                     prompt + "\n\nYou can only call " + memory_phrase_prompt +
                     "management tools. Other tools will be denied "
                     "at runtime — do not attempt them." + prompt_extra
-                    + _live_memory_block(st.review_agent)
+                    + (_live_memory_block(st.review_agent) if review_memory else "")
                 ),
                 conversation_history=_digest_history(messages_snapshot) if _routed else messages_snapshot,
             )
