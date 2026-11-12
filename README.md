@@ -54,6 +54,23 @@ Agent loop, toolset system, skills, memory, gateway platforms, model routing, CL
 | `local-fixes` | `main` + the reviewed local commits; this is what runs on the author's machine |
 | remotes | `upstream` → NousResearch/hermes-agent · `origin` → this fork |
 
+## Repository map
+
+The root looks busy because this is a full monorepo — agent, CLI, desktop app, and gateway all live in one tree. The main areas:
+
+| Path | What lives there |
+|---|---|
+| `agent/`, `hermes_cli/`, `gateway/`, `platform/` | Agent loop, CLI commands, messaging gateway, platform adapters |
+| `apps/desktop/` | Electron desktop app (renderer + main process) |
+| `apps/shared/` | Shared TypeScript packages (incl. the compiled theme presets) |
+| `plugins/` | Bundled first-party plugins |
+| `skills/`, `optional-skills/` | The skill library shipped with the agent |
+| `tests/`, `evals/` | Python test suite, evaluation harnesses |
+| `pm/`, `scripts/`, `tools/`, `docker/` | Developer tooling: PM package manager, CI/build scripts, docker |
+| `ui-tui/`, `web/`, `website/` | Terminal UI, web chat, documentation site |
+
+Everything else at the root is build/config plumbing (`pyproject.toml`, lockfiles, `Dockerfile`, activation scripts for the PM-managed dev environment).
+
 ## Running this fork
 
 This fork is not published as an installer. It runs from source using the upstream developer workflow — see [CONTRIBUTING.md](CONTRIBUTING.md) and the [developer guide](https://hermes-agent.nousresearch.com/docs/developer-guide/).
