@@ -113,7 +113,8 @@ export function StatusbarControls({ className, leftItems = [], items = [], ...pr
       <ContextMenuTrigger asChild>
         <footer
           className={cn(
-            'flex h-5 shrink-0 items-stretch justify-between gap-2 bg-(--ui-sidebar-surface-background) px-1 py-0 text-(--ui-text-tertiary) [-webkit-app-region:no-drag]',
+            // Holo: 24px keeps labels and icons fully visible at 90% UI zoom.
+            'flex h-6 shrink-0 items-stretch justify-between gap-2 bg-(--ui-sidebar-surface-background) px-1 py-0 text-(--ui-text-tertiary) [-webkit-app-region:no-drag]',
             className
           )}
           data-slot="statusbar"
