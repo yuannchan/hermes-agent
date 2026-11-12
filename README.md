@@ -26,14 +26,16 @@
   <a href="#the-caravan-we-travel-with">Upstream</a>
 </p>
 
-**Holo** is a personal, Windows-first fork of [Hermes Agent](https://github.com/NousResearch/hermes-agent), kept for one merchant's daily rounds. The agent core is untouched — the `hermes` command, gateway, tool system, skills and memory all behave exactly as upstream — while the desktop shell carries its own name, crest and palette, plus a handful of local fixes. The name comes from Holo, the wolf of Yoitsu in *Spice and Wolf*; the name is borrowed, the appetite for apples is not included.
+**Holo** is a small personal hobby fork of [Hermes Agent](https://github.com/NousResearch/hermes-agent): a Windows-first desktop shell with its own name, crest and palette, plus a handful of small local fixes. The agent core is untouched — the `hermes` command, gateway, tool system, skills and memory all behave exactly as upstream. The name comes from Holo, the wolf of Yoitsu in *Spice and Wolf*; the name is borrowed, the appetite for apples is not included.
+
+> **A hobby project, lightly tested.** The changes here are small, but none of them have been audited or broadly verified — some may be incomplete, or break on your setup. Treat this as a personal experiment, not a supported distribution. If you want something reliable, use [upstream](https://github.com/NousResearch/hermes-agent).
 
 ## Why this cart exists
 
 Every merchant needs a cart of their own. This one exists to:
 
 - **Carry its own crest** — app name, icon, wordmark and theme are "Holo", so a patched build is never mistaken for the installed official app. Branding only; no behaviour hangs off the name.
-- **Itemise the cargo** — every local fix is one reviewable commit with its own verification, stacked on a clean mirror of upstream.
+- **Itemise the cargo** — every change is one small, reviewable commit instead of a pile of uncommitted edits.
 - **Keep the road open** — `main` is upstream `main`, untouched. All local work sits on `local-fixes`, so upstream updates keep merging cleanly.
 
 ## The cargo manifest
@@ -74,15 +76,15 @@ NousResearch/hermes-agent : main
             ▼
      origin/main ─────────────► origin/local-fixes
                                          │
-                                         │  main + reviewed local commits
+                                         │  main + this fork's local commits
                                          ▼
-                                   runs on this machine
+                                         the default branch
 ```
 
 | Branch | Contents |
 |---|---|
 | `main` | Clean mirror of upstream `main` — no local changes |
-| `local-fixes` | `main` + the reviewed local commits; this is what runs on the author's machine |
+| `local-fixes` | `main` + this fork's local commits; the default branch |
 | remotes | `upstream` → `NousResearch/hermes-agent` · `origin` → this fork |
 
 ## The map
@@ -104,7 +106,7 @@ Everything else at the root is build and config plumbing — `pyproject.toml`, l
 
 ## Boarding
 
-Personal builds are published under [Releases](https://github.com/yuannchan/hermes-agent/releases) — Windows MSIX, built for the author's own machines, not an officially supported distribution. The source also runs straight from the upstream developer workflow: see [CONTRIBUTING.md](CONTRIBUTING.md) and the [developer guide](https://hermes-agent.nousresearch.com/docs/developer-guide/).
+Windows MSIX builds are published under [Releases](https://github.com/yuannchan/hermes-agent/releases). They are unsigned hobby artifacts: no support, no guarantees, and they may lag behind the source. The source also runs straight from the upstream developer workflow — see [CONTRIBUTING.md](CONTRIBUTING.md) and the [developer guide](https://hermes-agent.nousresearch.com/docs/developer-guide/).
 
 Looking for the official, supported application? Install [Hermes Agent](https://hermes-agent.nousresearch.com/) from upstream instead.
 
@@ -131,7 +133,7 @@ All documentation lives upstream at **[hermes-agent.nousresearch.com/docs](https
 
 MIT — see [LICENSE](LICENSE).
 
-Built on [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nous Research](https://nousresearch.com). This fork is a personal project, not affiliated with or endorsed by Nous Research. Upstream bugs belong in the [upstream issue tracker](https://github.com/NousResearch/hermes-agent/issues); questions specific to this fork are welcome in its own tracker.
+Built on [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nous Research](https://nousresearch.com). This fork is a personal hobby project, not affiliated with or endorsed by Nous Research. Upstream bugs belong in the [upstream issue tracker](https://github.com/NousResearch/hermes-agent/issues); questions specific to this fork are welcome in its own tracker.
 
 ---
 
