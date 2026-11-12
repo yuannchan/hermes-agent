@@ -9,7 +9,7 @@
 'use strict'
 
 const variants = {
-  '': { display: 'Hermes', kebab: 'hermes', pascal: 'Hermes' },
+  '': { display: 'Holo', kebab: 'hermes', pascal: 'Holo' },
   light: {
     display: 'Hermes Light',
     kebab: 'hermes-light',

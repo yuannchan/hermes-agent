@@ -2,7 +2,7 @@
   "name": "hermes",
   "productName": "Holo",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.3.0",
   "description": "Holo, the wolf agent — native desktop shell.",
   "author": "Nous Research",
   "repository": {
