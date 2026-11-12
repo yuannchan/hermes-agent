@@ -69,13 +69,14 @@ Two branches, one direction of travel:
 
 ```
 NousResearch/hermes-agent : main
-            │  (clean mirror, no local commits)
+            │
+            │  mirror, no local commits
             ▼
-     origin/main ───────────► origin/local-fixes
-                              main + reviewed local commits
-                                        │
-                                        ▼
-                               runs on this machine
+     origin/main ─────────────► origin/local-fixes
+                                         │
+                                         │  main + reviewed local commits
+                                         ▼
+                                   runs on this machine
 ```
 
 | Branch | Contents |
